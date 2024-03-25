@@ -1,0 +1,58 @@
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+
+ApplicationWindow {
+    visible: true
+    width: 640
+    height: 480
+    title: "Sample Application"
+
+    function readCSV(fileUrl) {
+        var componentArray = []
+        var xhr = new XMLHttpRequest
+        xhr.open("GET", fileUrl, false)
+        xhr.send(null)
+        var fileContent = xhr.responseText
+        var lines = fileContent.split("\n")
+        for (var i = 0; i < lines.length; i++) {
+            var data = lines[i].split(",")
+            if (data.length === 2) {
+                componentArray.push({ "image": data[0], "text": data[1] })
+            }
+        }
+        return componentArray
+    }
+
+    Component {
+        id: rectComponent
+        Rectangle {
+            width: 100
+            height: 100
+            Image {
+                id: img
+                anchors.fill: parent
+            }
+            Text {
+                id: txt
+                anchors.centerIn: parent
+            }
+        }
+    }
+
+    ScrollView {
+        anchors.fill: parent
+        ListView {
+            id: listView
+            width: parent.width
+            height: parent.height
+            model: readCSV("file:///path/to/your/file.csv")
+            delegate: Loader {
+                sourceComponent: rectComponent
+                onLoaded: {
+                    item.img.source = modelData.image
+                    item.txt.text = modelData.text
+                }
+            }
+        }
+    }
+}
